@@ -70,7 +70,7 @@ class Event(Model):
             query = query.offset(offset)
 
         if limit:
-            query = query.limit(offset)
+            query = query.limit(limit)
 
         cur = _conn.execute(query)
         events = [ev for ev in cur]
