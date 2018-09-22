@@ -1,6 +1,7 @@
 {
     "name": "hubble",
     "description": "VanHacks 2018",
+    "repository": "https://github.com/vanhacks-hubble/python-hubble",
     "env": {
         "CLIENT_CONFIG_URL": "https://raw.githubusercontent.com/vanhacks-hubble/python-hubble-config/master/config.yml"
     },
