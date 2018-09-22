@@ -4,6 +4,6 @@ ENV LOG_LEVEL=warn
 
 WORKDIR /api
 COPY . /api
-RUN pip install -e .
+RUN pip install .
 
-CMD gunicorn --log-level=${LOG_LEVEL} -b 0:8000 snitch.wsgi
+CMD gunicorn --log-level=${LOG_LEVEL} -b 0:${PORT} hubble.wsgi
