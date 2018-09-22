@@ -13,10 +13,10 @@ def initdb(uri):
 
 
 class Event:
-    def __init__(self, img_url, lat, long, comments=None):
-        self.img_url = img_url
-        self.lat = lat
-        self.long = long
+    def __init__(self, url, lat, long, comments=None):
+        self.url = url
+        self.lattitude = lat
+        self.longitude = long
         self.comments = comments
 
     def save(self):
