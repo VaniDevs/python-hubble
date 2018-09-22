@@ -25,10 +25,20 @@ class HelloWorld:
 
 class SendUpdate:
     def on_post(self, req, resp):
+
+        lat = ""
+        long = ""
+
+        with open(req.geoJson) as geoJson:
+            data = json.load(geoJson)
+        for feature in data['features']:
+            lat = feature['geometry']['coordinates'][0]
+            long = feature['geometry']['coordinates'][1]
+
         print("saving key " + key)
         s3.put_object(Bucket=bucket_name, Key=key, Body=b'foobar')
         print("Getting S3 object " + key)
         response = s3.get_object(Bucket=bucket_name, Key=key)
         image_url = "http://s3-" + s3_region_name + ".amazonaws.com/" + bucket_name + "/" + key
-        event = Event(image_url, req.lat, req.long, req.comments)
+        event = Event(image_url, lat, long, req.comments)
         event.save()
