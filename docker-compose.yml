@@ -13,3 +13,8 @@ services:
       - db
   db:
     image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=hubble
+      - POSTGRES_PASSWORD=insecure
