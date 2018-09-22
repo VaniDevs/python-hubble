@@ -1,59 +1,81 @@
 import json
+import time
+import uuid
+
 import sqlalchemy
 from sqlalchemy.dialects import postgresql
 
 
-engine = None
-metadata = sqlalchemy.MetaData()
+_engine = None
+_conn = None
+_metadata = sqlalchemy.MetaData()
 
 
 def initdb(uri):
-    global engine
-    engine = sqlalchemy.create_engine(uri)
+    global _engine, _conn
+    _engine = sqlalchemy.create_engine(uri)
+    _conn = _engine.connect()
 
 
-class Event:
-    def __init__(self, url, lat, long, comments=None):
-        self.url = url
-        self.lattitude = lat
-        self.longitude = long
+def createdb():
+    _metadata.create_all(_engine)
+
+
+class Model:
+    def save(self, statement):
+        _conn.execute(statement)
+
+
+class Event(Model):
+    _table = sqlalchemy.Table(
+        'events',
+        _metadata,
+        sqlalchemy.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
+        sqlalchemy.Column('location_name', sqlalchemy.String),
+        sqlalchemy.Column('image_url', sqlalchemy.String),
+        sqlalchemy.Column('lattitude', sqlalchemy.Float),
+        sqlalchemy.Column('longitude', sqlalchemy.Float),
+        sqlalchemy.Column('comments', sqlalchemy.String),
+        sqlalchemy.Column('created', sqlalchemy.Integer),
+    )
+
+    def __init__(self, location_name, image_url, lattitude=None, longitude=None,
+                 comments=None, id=None, created=None):
+        self.id = id
+        self.image_url = image_url
+        self.location_name = location_name
+        self.lattitude = lattitude
+        self.longitude = longitude
         self.comments = comments
+        self.created = created or time.time()
+
 
     def save(self):
-        # TODO: wire up to db
-        _EVENTS.append(self)
+        id = uuid.uuid4()
+        ev = Event._table.insert().values(
+            location_name=self.location_name,
+            id=id,
+            image_url=self.image_url,
+            lattitude=self.lattitude,
+            longitude=self.longitude,
+            comments=self.comments
+        )
+        self.id = id
+        super().save(ev)
 
     @staticmethod
-    def all():
-        # TODO: wire up to db
-        return _EVENTS 
+    def all(offset=None, limit=None):
+        query = Event._table.select().order_by(Event._table.c.created.desc())
+        if offset:
+            query = query.offset(offset)
 
+        if limit:
+            query = query.limit(offset)
 
-_events = sqlalchemy.Table(
-    'events',
-    metadata,
-    sqlalchemy.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
-)
-
-
-def _generate_debug_data():
-    import random, base64
-
-    events = []
-
-    for _ in range(100):
-        lat = random.uniform(-90, 90)
-        long = random.uniform(-180, 180)
-
-        events.append(
-            Event(
-                'https://i.kym-cdn.com/photos/images/newsfeed/001/217/729/f9a.jpg',
-                random.uniform(-90, 90),
-                random.uniform(-90, 90),
-                'something bad happened'
-            )
-        )
-
-    return events
-
-_EVENTS = _generate_debug_data()
+        cur = _conn.execute(query)
+        events = [ev for ev in cur]
+        cols = cur.keys()
+        return [
+            Event(**{cols[idx]: val for idx, val in enumerate(ev)})
+            for ev in events
+        ]

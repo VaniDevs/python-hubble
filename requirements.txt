@@ -2,3 +2,4 @@ gunicorn==19.9.0
 falcon==1.4.1
 sqlalchemy==1.2.12
 boto3==1.9.9
+psycopg2==2.7.5
