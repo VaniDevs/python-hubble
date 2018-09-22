@@ -1,9 +1,20 @@
 import json
+import sqlalchemy
+from sqlalchemy.dialects import postgresql
+
+
+engine = None
+metadata = sqlalchemy.MetaData()
+
+
+def initdb(uri):
+    global engine
+    engine = sqlalchemy.create_engine(uri)
 
 
 class Event:
-    def __init__(self, img_data, lat, long, comments=None):
-        self.img_data = img_data
+    def __init__(self, img_url, lat, long, comments=None):
+        self.img_url = img_url
         self.lat = lat
         self.long = long
         self.comments = comments
@@ -18,11 +29,15 @@ class Event:
         return _EVENTS 
 
 
+_events = sqlalchemy.Table(
+    'events',
+    metadata,
+    sqlalchemy.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
+)
+
+
 def _generate_debug_data():
     import random, base64
-
-    with open('data/meme.jpg', 'rb') as test_img:
-        img_data = base64.b64encode(test_img.read())
 
     events = []
 
@@ -32,9 +47,10 @@ def _generate_debug_data():
 
         events.append(
             Event(
+                'https://i.kym-cdn.com/photos/images/newsfeed/001/217/729/f9a.jpg',
                 random.uniform(-90, 90),
                 random.uniform(-90, 90),
-                'someting bad happened'
+                'something bad happened'
             )
         )
 
