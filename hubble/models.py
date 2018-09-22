@@ -31,16 +31,19 @@ class Event(Model):
         'events',
         _metadata,
         sqlalchemy.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
-        sqlalchemy.Column('url', sqlalchemy.String),
+        sqlalchemy.Column('location_name', sqlalchemy.String),
+        sqlalchemy.Column('image_url', sqlalchemy.String),
         sqlalchemy.Column('lattitude', sqlalchemy.Float),
         sqlalchemy.Column('longitude', sqlalchemy.Float),
         sqlalchemy.Column('comments', sqlalchemy.String),
         sqlalchemy.Column('created', sqlalchemy.Integer),
     )
 
-    def __init__(self, url, lattitude=None, longitude=None, comments=None, id=None,
-                 created=None):
-        self.url = url
+    def __init__(self, location_name, image_url, lattitude=None, longitude=None,
+                 comments=None, id=None, created=None):
+        self.id = id
+        self.image_url = image_url
+        self.location_name = location_name
         self.lattitude = lattitude
         self.longitude = longitude
         self.comments = comments
@@ -50,8 +53,9 @@ class Event(Model):
     def save(self):
         id = uuid.uuid4()
         ev = Event._table.insert().values(
+            location_name=self.location_name,
             id=id,
-            url=self.url,
+            image_url=self.image_url,
             lattitude=self.lattitude,
             longitude=self.longitude,
             comments=self.comments
