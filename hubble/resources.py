@@ -1,8 +1,12 @@
 import falcon
 import json
 
-from hubble import models
+from hubble import models, client_config
 
+
+class ClientConfig:
+    def on_get(self, req, resp):
+        resp.media = client_config.settings
 
 
 class Event:
