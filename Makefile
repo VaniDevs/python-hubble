@@ -1,4 +1,4 @@
-NAME		:= local/snitch
+NAME		:= registry.heroku.com/vanhacks-hubble/web
 TAG    		:= $(shell git log -1 --pretty=%h)
 DOCKERFILE 	:= ./Dockerfile
 PORT		:= 8000
