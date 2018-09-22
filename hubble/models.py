@@ -38,7 +38,7 @@ class Event(Model):
         sqlalchemy.Column('created', sqlalchemy.Integer),
     )
 
-    def __init__(self, url, lattitude, longitude, comments=None, id=None,
+    def __init__(self, url, lattitude=None, longitude=None, comments=None, id=None,
                  created=None):
         self.url = url
         self.lattitude = lattitude
