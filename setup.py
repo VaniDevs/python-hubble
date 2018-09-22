@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__file__), 'requirements-dev.txt')) as re
 
 
 setuptools.setup(
-    name='snitch',
+    name='hubble',
     version='0.1.0',
     install_requires=requirements,
 )

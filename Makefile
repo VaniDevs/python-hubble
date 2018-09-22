@@ -7,10 +7,10 @@ build:
 	docker build -t ${NAME}:${TAG} -t ${NAME}:latest -f ${DOCKERFILE} .
 
 run:
-	docker run -p ${PORT}:${PORT} -t ${NAME}:${TAG}
+	docker run -e PORT=${PORT} -p ${PORT}:${PORT} -t ${NAME}:${TAG}
 
 debug:
-	docker run -v $(shell pwd):/api -p ${PORT}:${PORT} -e LOG_LEVEL=debug -t ${NAME}:${TAG}
+	docker run -v $(shell pwd):/api -p ${PORT}:${PORT} -e PORT=${PORT} -e LOG_LEVEL=debug -t ${NAME}:${TAG}
 
 stop:
 	docker stop $(shell docker ps -qa) && docker rm $(shell docker ps -qa)

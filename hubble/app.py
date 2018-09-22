@@ -1,5 +1,5 @@
 import falcon
-from snitch import resources
+from hubble import resources
 
 
 def create_app(config):
