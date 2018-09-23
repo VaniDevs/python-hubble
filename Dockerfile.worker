@@ -1,0 +1,9 @@
+FROM python:3.7.0-stretch
+
+ENV LOG_LEVEL=warn
+
+WORKDIR /api
+COPY . /api
+RUN pip install .
+
+CMD celery -A hubble.tasks worker --loglevel=info

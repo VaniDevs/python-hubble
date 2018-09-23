@@ -13,4 +13,10 @@ setuptools.setup(
     name='hubble',
     version='0.1.0',
     install_requires=requirements,
+    entry_points={
+        'console_scripts': [
+            'hubble-createdb=hubble.app:cmd_createdb',
+            'hubble-dropdb=hubble.app:cmd_dropdb',
+        ],
+    },
 )

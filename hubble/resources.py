@@ -9,27 +9,13 @@ import enum
 
 from PIL import Image
 
-from hubble import models, client_config, cors
+from hubble import models, client_config, cors, tasks
+from hubble.models import Event
 
 
 class ClientConfig:
     def on_get(self, req, resp):
         resp.media = client_config.settings
-
-access_key = os.environ['S3_KEY']
-secret_key = os.environ['S3_SECRET']
-s3_region_name = os.environ.get('S3_REGION', 'ca-central-1')
-bucket_name = os.environ.get('S3_BUCKET', 'vanhacks2018')
-
-s3 = boto3.resource('s3', region_name=s3_region_name, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-client = boto3.client('s3', region_name=s3_region_name, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-
-
-def uploadImageToS3(img_data, ext):
-    key = f'{str(uuid.uuid4())}.{ext}'
-
-    client.put_object(Bucket=bucket_name, Key=key, Body=img_data, ACL='public-read')
-    return f'http://s3-{s3_region_name}.amazonaws.com/{bucket_name}/{key}'
 
 
 MAX_WIDTH, MAX_HEIGHT = (500, 500)
@@ -39,7 +25,6 @@ class Axis(enum.IntEnum):
 
 
 def handleImagePost(data):
-
     buffer = io.BytesIO(base64.b64decode(data['image_data']))
 
     img = Image.open(buffer)
@@ -57,30 +42,16 @@ def handleImagePost(data):
             )
     
     img.save(out_buffer, 'JPEG')
-    image_url = uploadImageToS3(out_buffer.getvalue(), 'jpg')
-
     (lat, lng) = data['location']
-
     location_name = data['name']
 
-    event = models.Event(location_name, image_url, lat, lng, data['comment'])
-    event.save()
-    return {
-        'id': str(event.id),
-        'image_url': event.image_url,
-        'comments': event.comments,
-        'location': {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [event.longitude, event.lattitude],
-            },
-            "properties": {
-                "name": event.location_name,
-            }
-        },
-        'created': event.created,
-    }
+    tasks.process_event.apply_async(
+        args=(
+            location_name,
+            base64.b64encode(out_buffer.getvalue()).decode('utf8'),
+            lat, lng, data['comment']
+        )
+    )
 
 
 class Event:

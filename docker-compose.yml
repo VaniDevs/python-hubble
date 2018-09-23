@@ -1,12 +1,15 @@
 version: '3'
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.web
     ports:
       - 8000:8000
     environment:
       - PORT=8000
       - DATABASE_URL=postgres://hubble:insecure@db
+      - REDIS_URL=redis://redis/0
       - CLIENT_CONFIG_URL=https://raw.githubusercontent.com/vanhacks-hubble/python-hubble-config/master/config.yml
       - S3_KEY=''
       - S3_SECRET=''
@@ -14,8 +17,17 @@ services:
       - .:/api
     links:
       - db
+      - redis
     depends_on:
       - db
+      - redis
+      - worker
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - REDIS_URL=redis://redis/0
   db:
     image: postgres
     ports:
@@ -23,3 +35,7 @@ services:
     environment:
       - POSTGRES_USER=hubble
       - POSTGRES_PASSWORD=insecure
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
