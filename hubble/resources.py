@@ -5,8 +5,13 @@ import uuid
 import base64
 import os
 
-from hubble import models
+from hubble import models, client_config
 from hubble.models import Event
+
+
+class ClientConfig:
+    def on_get(self, req, resp):
+        resp.media = client_config.settings
 
 access_key = os.environ['S3_KEY']
 secret_key = os.environ['S3_SECRET']
@@ -65,9 +70,6 @@ class Event:
             }
             for ev in events
         ]
-
-
-class SendUpdate:
 
     def on_post(self, req, resp):
         handleImagePost(req, resp)

@@ -1,0 +1,19 @@
+{
+    "name": "hubble",
+    "description": "VanHacks 2018",
+    "repo": "https://github.com/vanhacks-hubble/python-hubble",
+    "formation": {
+        "web": {
+            "quantity": 1,
+            "size": "free"
+        }
+    },
+    "env": {
+        "CLIENT_CONFIG_URL": "https://raw.githubusercontent.com/vanhacks-hubble/python-hubble-config/master/config.yml"
+    },
+    "addons": [
+        {
+            "plan": "heroku-postgresql"
+        }
+    ]
+}
