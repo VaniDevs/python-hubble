@@ -49,7 +49,6 @@ class Event(Model):
         self.comments = comments
         self.created = created or time.time()
 
-
     def save(self):
         id = uuid.uuid4()
         ev = Event._table.insert().values(
@@ -58,7 +57,8 @@ class Event(Model):
             image_url=self.image_url,
             lattitude=self.lattitude,
             longitude=self.longitude,
-            comments=self.comments
+            comments=self.comments,
+            created=self.created
         )
         self.id = id
         super().save(ev)

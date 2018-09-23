@@ -6,7 +6,6 @@ import base64
 import os
 
 from hubble import models, client_config, cors
-from hubble.models import Event
 
 
 class ClientConfig:
@@ -38,7 +37,7 @@ def handleImagePost(data):
 
     image_url = uploadImageToS3(data['image_data'])
 
-    event = Event(location_name, image_url, lat, lng, data['comment'])
+    event = models.Event(location_name, image_url, lat, lng, data['comment'])
     event.save()
     return {
         'id': str(event.id),
