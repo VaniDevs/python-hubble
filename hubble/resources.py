@@ -26,13 +26,9 @@ def uploadImageToS3(image):
 
     decoded_image = base64.b64decode(image)
 
-    print("saving key " + key)
     client.put_object(Bucket=bucket_name, Key=key, Body=decoded_image)
-    print("Getting S3 object " + key)
     response = client.get_object(Bucket=bucket_name, Key=key)
-    print(response)
     image_url = "http://s3-" + s3_region_name + ".amazonaws.com/" + bucket_name + "/" + key  # almost 100% sure this is not right yet
-    print(image_url)
     return image_url
 
 def handleImagePost(req, resp):
