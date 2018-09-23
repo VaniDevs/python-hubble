@@ -10,9 +10,9 @@ from hubble.models import Event
 
 access_key = os.environ['S3_KEY']
 secret_key = os.environ['S3_SECRET']
+s3_region_name = os.environ.get('S3_REGION', 'ca-central-1')
+bucket_name = os.environ.get('S3_BUCKET', 'vanhacks2018')
 
-s3_region_name = 'ca-central-1'
-bucket_name = "vanhacks2018"
 s3 = boto3.resource('s3', region_name=s3_region_name, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 client = boto3.client('s3', region_name=s3_region_name, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
@@ -31,18 +31,12 @@ def uploadImageToS3(image):
     return image_url
 
 def handleImagePost(req, resp):
-    lat = ""
-    long = ""
 
-    with open(req.geoJson) as geoJson:
-        data = json.load(geoJson)
-    for feature in data['features']:
-        lat = feature['geometry']['coordinates'][0]
-        long = feature['geometry']['coordinates'][1]
+    (lat, lng) = req.media['location']['geometry']['coordinates']
 
-    image_url = uploadImageToS3(req)
+    image_url = uploadImageToS3(req.body.image_data)
 
-    event = Event(image_url, lat, long, req.comments)
+    event = Event(image_url, lat, lng, req.comments)
     event.save()
 
 class Event:
