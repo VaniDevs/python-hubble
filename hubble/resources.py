@@ -26,8 +26,7 @@ def uploadImageToS3(image):
 
     decoded_image = base64.b64decode(image)
 
-    client.put_object(Bucket=bucket_name, Key=key, Body=decoded_image)
-    response = client.get_object(Bucket=bucket_name, Key=key)
+    client.put_object(Bucket=bucket_name, Key=key, Body=decoded_image, ACL='public-read')
     image_url = "http://s3-" + s3_region_name + ".amazonaws.com/" + bucket_name + "/" + key  # almost 100% sure this is not right yet
     return image_url
 
@@ -37,7 +36,7 @@ def handleImagePost(req, resp):
 
     image_url = uploadImageToS3(req.body.image_data)
 
-    event = Event(image_url, lat, lng, req.comments)
+    event = Event(image_url, lat, lng, req.body.comments)
     event.save()
 
 class Event:
