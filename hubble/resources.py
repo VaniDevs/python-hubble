@@ -5,7 +5,7 @@ import uuid
 import base64
 import os
 
-from hubble import models, client_config
+from hubble import models, client_config, cors
 from hubble.models import Event
 
 
@@ -57,12 +57,14 @@ def handleImagePost(data):
         'created': event.created,
     }
 
+
 class Event:
+    @cors.allow
     def on_get(self, req, resp):
-        filters = req.params
         events = models.Event.all(
-            offset=filters.get('offset'),
-            limit=filters.get('limit')
+            offset=req.params.get('offset'),
+            limit=req.params.get('limit'),
+            area=req.params.get('area'),
         )
         resp.media = [
             {
@@ -87,4 +89,3 @@ class Event:
     def on_post(self, req, resp):
         data = req.media
         resp.media = handleImagePost(data)
-

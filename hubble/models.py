@@ -64,13 +64,26 @@ class Event(Model):
         super().save(ev)
 
     @staticmethod
-    def all(offset=None, limit=None):
-        query = Event._table.select().order_by(Event._table.c.created.desc())
-        if offset:
-            query = query.offset(offset)
+    def all(offset=None, limit=None, area=None):
+        query = Event._table.select().order_by(
+            Event._table.c.created.desc()
+        )
 
-        if limit:
-            query = query.limit(limit)
+        if area is not None:
+            min_lon, max_lon, min_lat, max_lat = (
+                float(v) for v in area.split(',')
+            )
+            query = query.where(
+                Event._table.c.longitude > min_lon
+            ).where(
+                Event._table.c.longitude < max_lon
+            ).where(
+                Event._table.c.lattitude > min_lat
+            ).where(
+                Event._table.c.lattitude < max_lat
+            )
+        
+        query = query.offset(offset).limit(limit)
 
         cur = _conn.execute(query)
         events = [ev for ev in cur]
