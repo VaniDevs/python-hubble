@@ -4,6 +4,10 @@ import boto3
 import uuid
 import base64
 import os
+import io
+import enum
+
+from PIL import Image
 
 from hubble import models, client_config, cors
 
@@ -20,22 +24,44 @@ bucket_name = os.environ.get('S3_BUCKET', 'vanhacks2018')
 s3 = boto3.resource('s3', region_name=s3_region_name, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 client = boto3.client('s3', region_name=s3_region_name, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
-def uploadImageToS3(image):
-    key = str(uuid.uuid4())
 
-    decoded_image = base64.b64decode(image)
+def uploadImageToS3(img_data, ext):
+    key = f'{str(uuid.uuid4())}.{ext}'
 
-    client.put_object(Bucket=bucket_name, Key=key, Body=decoded_image, ACL='public-read')
-    image_url = "http://s3-" + s3_region_name + ".amazonaws.com/" + bucket_name + "/" + key  # almost 100% sure this is not right yet
-    return image_url
+    client.put_object(Bucket=bucket_name, Key=key, Body=img_data, ACL='public-read')
+    return f'http://s3-{s3_region_name}.amazonaws.com/{bucket_name}/{key}'
+
+
+MAX_WIDTH, MAX_HEIGHT = (500, 500)
+class Axis(enum.IntEnum):
+    X = 0
+    Y = 1
+
 
 def handleImagePost(data):
+
+    buffer = io.BytesIO(base64.b64decode(data['image_data']))
+
+    img = Image.open(buffer)
+    out_buffer = io.BytesIO()
+
+    if img.width > MAX_WIDTH or img.height > MAX_HEIGHT:
+        scale_axis = Axis.Y if img.height > img.width else Axis.X
+        if scale_axis == Axis.Y:
+            img = img.resize(
+                (int(img.width * (MAX_HEIGHT / img.height)), int(MAX_HEIGHT))
+            )
+        else:
+            img = img.resize(
+                (int(MAX_WIDTH), int(img.height * (MAX_WIDTH / img.width)))
+            )
+    
+    img.save(out_buffer, 'JPEG')
+    image_url = uploadImageToS3(out_buffer.getvalue(), 'jpg')
 
     (lat, lng) = data['location']
 
     location_name = data['name']
-
-    image_url = uploadImageToS3(data['image_data'])
 
     event = models.Event(location_name, image_url, lat, lng, data['comment'])
     event.save()
