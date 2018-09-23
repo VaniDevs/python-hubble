@@ -2,6 +2,7 @@ import celery
 import logging
 import uuid
 import boto3
+import requests
 from os import environ
 
 from hubble import models
@@ -38,11 +39,20 @@ def process_event(name, image_data, lat, lng, comment):
     event.save()
 
     logging.info('Event %s created', event.id)
-    #_notify_external_service(event)
+    
     models._conn.close()
+    external_service = environ.get('EXTERNAL_SERVICE_NOTIFY_ENDPOINT')
+    if external_service:
+        notify_external.apply_async(
+            args=(external_service, event.id, image_url, lat, lng, comment)
+        )
 
 
-def _notify_external_services(event):
-    service_url = os.environ.get('EXTERNAL_NOTIFICATION_URL')
-    if service_url is None:
-        return
+@celery.task
+def notify_external(url, id, image_url, lat, lng, comment):
+    requests.post(url, json={
+        'event_id': id,
+        'image_url': image_url,
+        'position': [lat, lng],
+        'comment': comment,
+    })
