@@ -3,6 +3,7 @@ import logging
 import uuid
 import boto3
 import requests
+import base64
 from os import environ
 
 from hubble import models
@@ -32,7 +33,7 @@ def process_event(name, image_data, lat, lng, comment):
 
     logging.info('Processing event')
 
-    image_url = uploadImageToS3(image_data, 'jpg')
+    image_url = uploadImageToS3(base64.b64decode(image_data), 'jpg')
     logging.info('Event image uploaded to %s', image_url)
 
     event = models.Event(name, image_url, lat, lng, comment)
