@@ -32,11 +32,11 @@ def uploadImageToS3(image):
 
 def handleImagePost(req, resp):
 
-    (lat, lng) = req.media['location']['geometry']['coordinates']
+    (lat, lng) = req.body.location
 
     image_url = uploadImageToS3(req.body.image_data)
 
-    event = Event(image_url, lat, lng, req.body.comments)
+    event = Event(image_url, lat, lng, req.body.comment)
     event.save()
 
 class Event:
