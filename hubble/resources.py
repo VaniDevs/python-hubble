@@ -30,14 +30,32 @@ def uploadImageToS3(image):
     image_url = "http://s3-" + s3_region_name + ".amazonaws.com/" + bucket_name + "/" + key  # almost 100% sure this is not right yet
     return image_url
 
-def handleImagePost(req, resp):
+def handleImagePost(data):
 
-    (lat, lng) = req.body.location
+    (lat, lng) = data['location']
 
-    image_url = uploadImageToS3(req.body.image_data)
+    location_name = data['name']
 
-    event = Event(image_url, lat, lng, req.body.comment)
+    image_url = uploadImageToS3(data['image_data'])
+
+    event = Event(location_name, image_url, lat, lng, data['comment'])
     event.save()
+    return {
+        'id': str(event.id),
+        'image_url': event.image_url,
+        'comments': event.comments,
+        'location': {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [event.longitude, event.lattitude],
+            },
+            "properties": {
+                "name": event.location_name,
+            }
+        },
+        'created': event.created,
+    }
 
 class Event:
     def on_get(self, req, resp):
@@ -67,5 +85,6 @@ class Event:
         ]
 
     def on_post(self, req, resp):
-        handleImagePost(req, resp)
+        data = req.media
+        resp.media = handleImagePost(data)
 
