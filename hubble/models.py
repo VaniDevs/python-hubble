@@ -21,6 +21,10 @@ def createdb():
     _metadata.create_all(_engine)
 
 
+def dropdb():
+    _metedata.drop_all(_engine)
+
+
 class Model:
     def save(self, statement):
         _conn.execute(statement)
